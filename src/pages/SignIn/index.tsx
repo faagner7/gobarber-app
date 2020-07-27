@@ -1,4 +1,5 @@
-import React from 'react';
+/* eslint-disable no-console */
+import React, { useCallback, useRef } from 'react';
 import {
   Image,
   View,
@@ -8,6 +9,9 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import { useNavigation } from '@react-navigation/native';
+import { Form } from '@unform/mobile';
+// eslint-disable-next-line no-unused-vars
+import { FormHandles } from '@unform/core';
 
 import Input from '../../componets/Input';
 import Button from '../../componets/Button';
@@ -24,7 +28,12 @@ import {
 } from './styles';
 
 const SignIn: React.FC = () => {
+  const formRef = useRef<FormHandles>(null);
   const navigation = useNavigation();
+
+  const handleSignIn = useCallback((data: Object) => {
+    console.log(data);
+  }, []);
 
   return (
     <>
@@ -42,15 +51,18 @@ const SignIn: React.FC = () => {
             <View>
               <Title>Faça seu logon</Title>
             </View>
-            <Input name="email" icon="mail" placeholder="E-mail" />
-            <Input name="password" icon="lock" placeholder="Senha" />
-            <Button
-              onPress={() => {
-                console.log('ae');
-              }}
-            >
-              Entrar
-            </Button>
+            <Form ref={formRef} onSubmit={handleSignIn}>
+              <Input name="email" icon="mail" placeholder="E-mail" />
+              <Input name="password" icon="lock" placeholder="Senha" />
+              <Button
+                onPress={() => {
+                  // eslint-disable-next-line no-unused-expressions
+                  formRef.current?.submitForm();
+                }}
+              >
+                Entrar
+              </Button>
+            </Form>
             <ForgotPassword
               onPress={() => {
                 console.log('ae');
