@@ -16,6 +16,8 @@ import { Form } from '@unform/mobile';
 import { FormHandles } from '@unform/core';
 import * as Yup from 'yup';
 
+import { useAuth } from '../../hooks/auth';
+
 import getValidationError from '../../utils/getValidationErrors';
 
 import Input from '../../componets/Input';
@@ -41,34 +43,45 @@ const SignIn: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
   const passwordInputRef = useRef<TextInput>(null);
   const navigation = useNavigation();
+  const { signIn, user } = useAuth();
 
-  const handleSignIn = useCallback(async (data: SignInFormData) => {
-    try {
-      formRef.current?.setErrors({});
+  console.log(user);
 
-      const schema = Yup.object().shape({
-        email: Yup.string().required().email().email(),
-        password: Yup.string().required(),
-      });
+  const handleSignIn = useCallback(
+    async (data: SignInFormData) => {
+      try {
+        formRef.current?.setErrors({});
 
-      await schema.validate(data, {
-        abortEarly: false,
-      });
-    } catch (e) {
-      if (e instanceof Yup.ValidationError) {
-        const errors = getValidationError(e);
+        const schema = Yup.object().shape({
+          email: Yup.string().required(),
+          password: Yup.string().required(),
+        });
 
-        formRef.current?.setErrors(errors);
+        await schema.validate(data, {
+          abortEarly: false,
+        });
 
-        return;
+        await signIn({
+          email: data.email,
+          password: data.password,
+        });
+      } catch (e) {
+        if (e instanceof Yup.ValidationError) {
+          const errors = getValidationError(e);
+
+          formRef.current?.setErrors(errors);
+
+          return;
+        }
+
+        Alert.alert(
+          'Erro na autenticação',
+          'Ocorreu um erro ao fazer o login, cheque as credencias.',
+        );
       }
-
-      Alert.alert(
-        'Erro na autenticação',
-        'Ocorreu um erro ao fazer o login, cheque as credencias.',
-      );
-    }
-  }, []);
+    },
+    [signIn],
+  );
 
   return (
     <>

@@ -16,6 +16,8 @@ import * as Yup from 'yup';
 import { Form } from '@unform/mobile';
 import { FormHandles } from '@unform/core';
 
+import api from '../../services/api';
+
 import Input from '../../componets/Input';
 import Button from '../../componets/Button';
 import getValidationError from '../../utils/getValidationErrors';
@@ -36,34 +38,46 @@ const SignUp: React.FC = () => {
   const emailInputRef = useRef<TextInput>(null);
   const passwordInputRef = useRef<TextInput>(null);
 
-  const handleSignUp = useCallback(async (data: SignUpFormData) => {
-    try {
-      formRef.current?.setErrors({});
+  const handleSignUp = useCallback(
+    async (data: SignUpFormData) => {
+      try {
+        formRef.current?.setErrors({});
 
-      const schema = Yup.object().shape({
-        name: Yup.string().required(),
-        email: Yup.string().required().email(),
-        password: Yup.string().min(6),
-      });
+        const schema = Yup.object().shape({
+          name: Yup.string().required(),
+          email: Yup.string().required().email(),
+          password: Yup.string().min(6),
+        });
 
-      await schema.validate(data, {
-        abortEarly: false,
-      });
-    } catch (e) {
-      if (e instanceof Yup.ValidationError) {
-        const errors = getValidationError(e);
+        await schema.validate(data, {
+          abortEarly: false,
+        });
 
-        formRef.current?.setErrors(errors);
+        await api.post('/users', data);
 
-        return;
+        Alert.alert(
+          'Cadastro realizado com sucesso!',
+          'Você já pode fazer login na aplicação!',
+        );
+
+        navigation.navigate('SignIn');
+      } catch (e) {
+        if (e instanceof Yup.ValidationError) {
+          const errors = getValidationError(e);
+
+          formRef.current?.setErrors(errors);
+
+          return;
+        }
+
+        Alert.alert(
+          'Erro na autenticação',
+          'Ocorreu um erro ao fazer o cadastro, tente novamente.',
+        );
       }
-
-      Alert.alert(
-        'Erro na autenticação',
-        'Ocorreu um erro ao fazer o cadastro, tente novamente.',
-      );
-    }
-  }, []);
+    },
+    [navigation],
+  );
 
   return (
     <>
